@@ -11,7 +11,77 @@
 #define BRIGHTNESS  200
 #define FRAMES_PER_SECOND 40
 
+/* COOLING: How much does the air cool as it rises?
+ * Less cooling = taller flames.  More cooling = shorter flames.
+ * Default 55, suggested range 20-100 */
+#define COOLING  55
+
+/* SPARKING: What chance (out of 255) is there that a new spark will be lit?
+ * Higher chance = more roaring fire.  Lower chance = more flickery fire.
+ * Default 120, suggested range 50-200. */
+#define SPARKING 100
+
+/* We are processing 4 segments, which form two U shapes:
+ *
+ *    1    0`------. .--------'2    3
+ *    1    0        Y          2    3
+ *    1    0        |          2    3
+ *    111000      leds[]       222333
+ *
+ * Each segment has NUM_LEDS.
+ */
 CRGB leds[4][NUM_LEDS];
+
+// Segments 0 and 2 will be reversed.
+void Fire2012WithPalette(unsigned leds_idx, bool reverse);
+
+CRGBPalette16 gPal;
+
+void setup() {
+  // The first strip gets leds[0..1], the second gets leds[2..3]
+  FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds[2], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
+
+  FastLED.setBrightness(BRIGHTNESS);
+
+  // Black Knight colour palette. Other examples below...
+  gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Orange);
+
+  /* This first palette is the basic 'black body radiation' colors,
+  // which run from black to red to bright yellow to white.
+  //gPal = HeatColors_p;
+
+  // First, a gradient from black to red to yellow to white -- similar to HeatColors_p
+  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::Yellow, CRGB::White);
+
+  // Second, this palette is like the heat colors, but blue/aqua instead of red/yellow
+  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Blue, CRGB::Aqua,  CRGB::White);
+
+  // Third, here's a simpler, three-step gradient, from black to red to white
+  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::White);
+
+  // Fourth, the most sophisticated: this one sets up a new palette every
+  // time through the loop, based on a hue that changes every time.
+  // The palette is a gradient from black, to a dark color based on the hue,
+  // to a light color based on the hue, to white. (Put the code in loop().)
+
+  // static uint8_t hue = 0;
+  // hue++;
+  // CRGB darkcolor  = CHSV(hue,255,192); // pure hue, three-quarters brightness
+  // CRGB lightcolor = CHSV(hue,128,255); // half 'whitened', full brightness
+  // gPal = CRGBPalette16( CRGB::Black, darkcolor, lightcolor, CRGB::White);
+   */
+}
+
+void loop()
+{
+  for (int i = 0; i < 4; i++)
+    Fire2012WithPalette(i, !(i & 1)); // reverse every other segment
+
+  FastLED.show(); // display this frame
+  FastLED.delay(1000 / FRAMES_PER_SECOND);
+}
+
 
 /* Fire2012 with programmable Color Palette
  *
@@ -41,56 +111,6 @@ CRGB leds[4][NUM_LEDS];
  * color palette every time through the loop, producing "rainbow fire".
  */
 
-void Fire2012WithPalette(unsigned leds_idx, bool reverse);
-
-CRGBPalette16 gPal;
-
-void setup() {
-  FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection( TypicalLEDStrip );
-  FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds[2], 2 * NUM_LEDS).setCorrection( TypicalLEDStrip );
-
-  FastLED.setBrightness( BRIGHTNESS );
-
-  // Black Knight colour palette. Other examples below...
-  gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::Orange);
-
-  /* This first palette is the basic 'black body radiation' colors,
-  // which run from black to red to bright yellow to white.
-  //gPal = HeatColors_p;
-
-  // First, a gradient from black to red to yellow to white -- similar to HeatColors_p
-  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::Yellow, CRGB::White);
-
-  // Second, this palette is like the heat colors, but blue/aqua instead of red/yellow
-  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Blue, CRGB::Aqua,  CRGB::White);
-
-  // Third, here's a simpler, three-step gradient, from black to red to white
-  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::White);
-  */
-}
-
-void loop()
-{
-  /* Fourth, the most sophisticated: this one sets up a new palette every
-   * time through the loop, based on a hue that changes every time.
-   * The palette is a gradient from black, to a dark color based on the hue,
-   * to a light color based on the hue, to white.
-
-  // static uint8_t hue = 0;
-  // hue++;
-  // CRGB darkcolor  = CHSV(hue,255,192); // pure hue, three-quarters brightness
-  // CRGB lightcolor = CHSV(hue,128,255); // half 'whitened', full brightness
-  // gPal = CRGBPalette16( CRGB::Black, darkcolor, lightcolor, CRGB::White);
-   */
-
-  for (int i = 0; i < 4; i++)
-    Fire2012WithPalette(i, !(i & 1)); // run simulation frame, using palette colors
-
-  FastLED.show(); // display this frame
-  FastLED.delay(1000 / FRAMES_PER_SECOND);
-}
-
-
 /* Fire2012 by Mark Kriegsman, July 2012
  * as part of "Five Elements" shown here: http://youtu.be/knWiGsmgycY
  *
@@ -119,16 +139,6 @@ void loop()
  * feel of your fire: COOLING (used in step 1 above), and SPARKING (used
  * in step 3 above).
  */
-
-// COOLING: How much does the air cool as it rises?
-// Less cooling = taller flames.  More cooling = shorter flames.
-// Default 55, suggested range 20-100
-#define COOLING  55
-
-// SPARKING: What chance (out of 255) is there that a new spark will be lit?
-// Higher chance = more roaring fire.  Lower chance = more flickery fire.
-// Default 120, suggested range 50-200.
-#define SPARKING 100
 
 
 void Fire2012WithPalette(unsigned leds_idx, bool reverse)
