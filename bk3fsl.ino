@@ -38,6 +38,9 @@ void Fire2012WithPalette(unsigned leds_idx, bool reverse);
 CRGBPalette16 gPal;
 
 void setup() {
+  while (!Serial);
+  Serial.begin(115200);
+
   // The first strip gets leds[0..1], the second gets leds[2..3]
   FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds[2], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
