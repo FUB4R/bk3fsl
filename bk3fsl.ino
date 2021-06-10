@@ -10,6 +10,7 @@
 
 #define BRIGHTNESS  200
 #define FRAMES_PER_SECOND 40
+#define POKE_INTERVAL_MS 1000 /* mode status update rate */
 
 /* COOLING: How much does the air cool as it rises?
  * Less cooling = taller flames.  More cooling = shorter flames.
@@ -38,7 +39,7 @@ void Fire2012WithPalette(unsigned leds_idx, bool reverse);
 CRGBPalette16 gPal;
 
 void setup() {
-  while (!Serial);
+  // TODO check speed with scope!
   Serial.begin(115200);
 
   // The first strip gets leds[0..1], the second gets leds[2..3]
@@ -76,13 +77,114 @@ void setup() {
    */
 }
 
+/* Mode table we want to decode:
+
+Mode   Lit   CanStart   Running   Spotted   Complete   Completions
+------------------------------------------------------------------
+   0 |      |    Y    |    Y    |        |           |       0    | (Burning Sands)
+   1 |      |    Y    |         |        |           |       0    | (Mud Bog)
+   2 |      |    Y    |         |        |           |       0    | (Molten Fire)
+   3 |      |    Y    |         |        |           |       0    | (Wicked Cavern)
+   4 |      |    Y    |         |        |           |       0    | (Deep Freeze)
+   5 |      |    Y    |         |        |           |       0    | (Black Castle)
+   6 |      |    Y    |         |        |           |       0    | (Catapult Multiball)
+   7 |      |    Y    |         |        |           |       0    | (Triple Knight's Challenge)
+   8 |      |    Y    |         |        |           |       0    | (INVALID)
+   9 |      |    Y    |         |        |           |       0    | (INVALID)
+  10 |      |    Y    |         |        |           |       0    | (INVALID)
+  11 |      |    Y    |         |        |           |       0    | (INVALID)
+  12 |      |    Y    |         |        |           |       0    | (WAR Hurry Ups)
+  21 |      |    Y    |         |        |           |       0    | (Black Knight Wizard Multiball)
+  22 |      |    Y    |         |        |           |       0    | (THE KINGS RANSOM)
+  23 |      |    Y    |         |        |           |       0    | (SUPER CATAPULT Multiball)
+  24 |      |    Y    |         |        |           |       0    | (RAGE Multiball)
+  25 |      |    Y    |         |        |           |       0    | (Last Chance)
+*/
+#define NUM_MODES 26
+bool mode_running[NUM_MODES];
+
+void UpdatePalette()
+{
+  if (mode_running[0]) // Burning sands
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Yellow, CRGB::White);
+  if (mode_running[1]) // Mud bog
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Green, CRGB::White);
+  if (mode_running[3]) // Wicked cavern
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::White);
+  if (mode_running[4]) // Deep freeze
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Cyan, CRGB::White);
+  if (mode_running[5]) // Black castle
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Grey, CRGB::White);
+  if (mode_running[6]) // Catapult multiball
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Orange, CRGB::White);
+  if (mode_running[7]) // 3K multiball
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::White);
+  // 8..12  WAR hurry-up
+  // 21 BK wizard
+  // 22 BK2K wizard
+  // 23 Super catapult MB
+  // 24 RAGE MB
+  // 25 Last Chance
+  else // Default
+    gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Orange);
+}
+
+unsigned start_time = 0;
+unsigned col = 0; // Set to 0 each time we see a newline.
+bool new_line = true;
+
+// Line buffer
+#define BUF_SZ 256
+unsigned char buf[BUF_SZ];
+
+unsigned long last_fire = 0;
+unsigned long last_poke = 0;
+
 void loop()
 {
-  for (int i = 0; i < 4; i++)
-    Fire2012WithPalette(i, !(i & 1)); // reverse every other segment
+  if (Serial) {
+    if (millis() - last_poke > POKE_INTERVAL_MS) {
+      last_poke = millis();
+      Serial.write("mode status\r\n");
+    }
 
-  FastLED.show(); // display this frame
-  FastLED.delay(1000 / FRAMES_PER_SECOND);
+    while (Serial.available()) {
+      unsigned char c = Serial.read();
+      if (c == '\n' || col == BUF_SZ-1) {
+        col = 0;
+        new_line = true;
+      } else {
+        buf[col++] = c;
+        new_line = false;
+      }
+      buf[col] = 0;
+
+      if (col == 28) {
+        // This is horrible but it does the job.
+        if (buf[0] == ' ' && buf[1] == ' ' &&
+            buf[5] == '|' && buf[12] == '|' && buf[22] == '|' &&
+            buf[3] >= '0' && buf[3] <= '9' &&
+            (buf[2] == ' ' || (buf[2] >= '0' && buf[2] <= '9'))) {
+          bool running = (buf[27] == 'Y');
+          unsigned mode = buf[3] - '0';
+          if (buf[2] != ' ')
+            mode += 10 * (buf[2] - '0');
+          if (mode < NUM_MODES) {
+            mode_running[mode] = running;
+            UpdatePalette();
+          }
+        }
+      }
+    }
+  }
+
+  if (millis() - last_fire > 1000 / FRAMES_PER_SECOND) {
+    last_fire = millis();
+    for (int i = 0; i < 4; i++)
+      Fire2012WithPalette(i, !(i & 1)); // reverse every other segment
+    FastLED.show(); // display this frame
+  }
+
 }
 
 
