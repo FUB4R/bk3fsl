@@ -46,8 +46,6 @@ void Fire2012WithPalette(unsigned leds_idx, bool reverse);
 CRGBPalette16 gPal;
 
 void setup() {
-  delay(3000); // sanity delay
-
   FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection( TypicalLEDStrip );
   FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds[2], 2 * NUM_LEDS).setCorrection( TypicalLEDStrip );
 
@@ -73,9 +71,6 @@ void setup() {
 
 void loop()
 {
-  // Add entropy to random number generator; we use a lot of it.
-  random16_add_entropy( random());
-
   /* Fourth, the most sophisticated: this one sets up a new palette every
    * time through the loop, based on a hue that changes every time.
    * The palette is a gradient from black, to a dark color based on the hue,
