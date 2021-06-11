@@ -1,4 +1,5 @@
 #include <FastLED.h>
+#include <NeoHWSerial.h>
 
 // Output separate effects on D4 and D5
 #define LED_PIN0   4
@@ -38,12 +39,76 @@ void Fire2012WithPalette(unsigned leds_idx, bool reverse);
 
 CRGBPalette16 gPal;
 
-void setup() {
-  // TODO check speed with scope!
+unsigned long last_fire = 0;
+unsigned long last_rx   = 0;
+
+/* Mode table we want to decode:
+
+Mode   Lit   CanStart   Running   Spotted   Complete   Completions
+------------------------------------------------------------------
+   0 |      |    Y    |    Y    |        |           |       0    | (Burning Sands)
+   1 |      |    Y    |         |        |           |       0    | (Mud Bog)
+   2 |      |    Y    |         |        |           |       0    | (Molten Fire)
+   3 |      |    Y    |         |        |           |       0    | (Wicked Cavern)
+   4 |      |    Y    |         |        |           |       0    | (Deep Freeze)
+   5 |      |    Y    |         |        |           |       0    | (Black Castle)
+   6 |      |    Y    |         |        |           |       0    | (Catapult Multiball)
+   7 |      |    Y    |         |        |           |       0    | (Triple Knight's Challenge)
+   8 |      |    Y    |         |        |           |       0    | (INVALID)
+   9 |      |    Y    |         |        |           |       0    | (INVALID)
+  10 |      |    Y    |         |        |           |       0    | (INVALID)
+  11 |      |    Y    |         |        |           |       0    | (INVALID)
+  12 |      |    Y    |         |        |           |       0    | (WAR Hurry Ups)
+  21 |      |    Y    |         |        |           |       0    | (Black Knight Wizard Multiball)
+  22 |      |    Y    |         |        |           |       0    | (THE KINGS RANSOM)
+  23 |      |    Y    |         |        |           |       0    | (SUPER CATAPULT Multiball)
+  24 |      |    Y    |         |        |           |       0    | (RAGE Multiball)
+  25 |      |    Y    |         |        |           |       0    | (Last Chance)
+*/
+#define NUM_MODES 26
+bool mode_running[NUM_MODES];
+
+// Line buffer
+#define BUF_SZ 256
+volatile unsigned char buf[BUF_SZ];
+volatile unsigned col = 0; // Set to 0 each time we see a newline.
+
+static void uart_rx_interrupt(uint8_t c)
+{
+  last_rx = millis();
+
+  if (c == '\n' || c == '\r' || col == BUF_SZ-1) {
+    col = 0;
+  } else {
+    buf[col++] = c;
+  }
+  buf[col] = 0;
+
+  if (col == 28) {
+    // This is horrible but it does the job.
+    if (buf[0] == ' ' && buf[1] == ' ' &&
+        buf[5] == '|' && buf[12] == '|' && buf[22] == '|' &&
+        buf[3] >= '0' && buf[3] <= '9' &&
+        (buf[2] == ' ' || (buf[2] >= '0' && buf[2] <= '9'))) {
+      bool running = (buf[27] == 'Y');
+      unsigned mode = buf[3] - '0';
+      if (buf[2] != ' ')
+        mode += 10 * (buf[2] - '0');
+      if (mode < NUM_MODES) {
+        mode_running[mode] = running;
+      }
+    }
+  }
+}
+
+void setup()
+{
   // NB: if you change speed here, change the avrdude baudrate in Makefile to match.
-  Serial.begin(115200);
+  NeoSerial.attachInterrupt(uart_rx_interrupt);
+  NeoSerial.begin(115200);
 
   // The first strip gets leds[0..1], the second gets leds[2..3]
+  //FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds[2], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
 
@@ -78,32 +143,6 @@ void setup() {
    */
 }
 
-/* Mode table we want to decode:
-
-Mode   Lit   CanStart   Running   Spotted   Complete   Completions
-------------------------------------------------------------------
-   0 |      |    Y    |    Y    |        |           |       0    | (Burning Sands)
-   1 |      |    Y    |         |        |           |       0    | (Mud Bog)
-   2 |      |    Y    |         |        |           |       0    | (Molten Fire)
-   3 |      |    Y    |         |        |           |       0    | (Wicked Cavern)
-   4 |      |    Y    |         |        |           |       0    | (Deep Freeze)
-   5 |      |    Y    |         |        |           |       0    | (Black Castle)
-   6 |      |    Y    |         |        |           |       0    | (Catapult Multiball)
-   7 |      |    Y    |         |        |           |       0    | (Triple Knight's Challenge)
-   8 |      |    Y    |         |        |           |       0    | (INVALID)
-   9 |      |    Y    |         |        |           |       0    | (INVALID)
-  10 |      |    Y    |         |        |           |       0    | (INVALID)
-  11 |      |    Y    |         |        |           |       0    | (INVALID)
-  12 |      |    Y    |         |        |           |       0    | (WAR Hurry Ups)
-  21 |      |    Y    |         |        |           |       0    | (Black Knight Wizard Multiball)
-  22 |      |    Y    |         |        |           |       0    | (THE KINGS RANSOM)
-  23 |      |    Y    |         |        |           |       0    | (SUPER CATAPULT Multiball)
-  24 |      |    Y    |         |        |           |       0    | (RAGE Multiball)
-  25 |      |    Y    |         |        |           |       0    | (Last Chance)
-*/
-#define NUM_MODES 26
-bool mode_running[NUM_MODES];
-
 void UpdatePalette()
 {
   if (mode_running[0]) // Burning sands
@@ -130,57 +169,17 @@ void UpdatePalette()
     gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Orange);
 }
 
-unsigned start_time = 0;
-unsigned col = 0; // Set to 0 each time we see a newline.
-bool new_line = true;
-
-// Line buffer
-#define BUF_SZ 256
-unsigned char buf[BUF_SZ];
-
-unsigned long last_fire = 0;
-unsigned long last_poke = 0;
-
 void loop()
 {
-  if (Serial) {
-    if (millis() - last_poke > POKE_INTERVAL_MS) {
-      last_poke = millis();
-      Serial.write("mode status\r\n");
-    }
-
-    while (Serial.available()) {
-      unsigned char c = Serial.read();
-      if (c == '\n' || col == BUF_SZ-1) {
-        col = 0;
-        new_line = true;
-      } else {
-        buf[col++] = c;
-        new_line = false;
-      }
-      buf[col] = 0;
-
-      if (col == 28) {
-        // This is horrible but it does the job.
-        if (buf[0] == ' ' && buf[1] == ' ' &&
-            buf[5] == '|' && buf[12] == '|' && buf[22] == '|' &&
-            buf[3] >= '0' && buf[3] <= '9' &&
-            (buf[2] == ' ' || (buf[2] >= '0' && buf[2] <= '9'))) {
-          bool running = (buf[27] == 'Y');
-          unsigned mode = buf[3] - '0';
-          if (buf[2] != ' ')
-            mode += 10 * (buf[2] - '0');
-          if (mode < NUM_MODES) {
-            mode_running[mode] = running;
-            UpdatePalette();
-          }
-        }
-      }
+  if (NeoSerial) {
+    if (millis() - last_rx > POKE_INTERVAL_MS) {
+      NeoSerial.write("mode status\r\n");
     }
   }
 
   if (millis() - last_fire > 1000 / FRAMES_PER_SECOND) {
     last_fire = millis();
+    UpdatePalette();
     for (int i = 0; i < 4; i++)
       Fire2012WithPalette(i, !(i & 1)); // reverse every other segment
     FastLED.show(); // display this frame
