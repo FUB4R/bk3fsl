@@ -40,6 +40,7 @@ CRGBPalette16 gPal;
 
 void setup() {
   // TODO check speed with scope!
+  // NB: if you change speed here, change the avrdude baudrate in Makefile to match.
   Serial.begin(115200);
 
   // The first strip gets leds[0..1], the second gets leds[2..3]
