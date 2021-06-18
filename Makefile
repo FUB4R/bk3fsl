@@ -3,7 +3,7 @@
 
 BOARD_TAG     = nano328
 USER_LIB_PATH = $(shell pwd)
-ARDUINO_LIBS  = FastLED
+ARDUINO_LIBS  = FastLED NeoHWSerial
 
 # Code sets the serial port to 115200 - match here.
 AVRDUDE_ARD_BAUDRATE=115200

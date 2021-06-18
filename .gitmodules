@@ -4,3 +4,6 @@
 [submodule "FastLED"]
 	path = FastLED
 	url = https://github.com/FastLED/FastLED
+[submodule "NeoHWSerial"]
+	path = NeoHWSerial
+	url = git@github.com:SlashDevin/NeoHWSerial.git
