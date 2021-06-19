@@ -11,7 +11,7 @@
 
 #define BRIGHTNESS  200
 #define FRAMES_PER_SECOND 40
-#define POKE_INTERVAL_MS 1000 /* mode status update rate */
+#define POKE_INTERVAL_MS 2000 /* mode status update rate */
 
 /* COOLING: How much does the air cool as it rises?
  * Less cooling = taller flames.  More cooling = shorter flames.
@@ -40,7 +40,7 @@ void Fire2012WithPalette(unsigned leds_idx, bool reverse);
 CRGBPalette16 gPal;
 
 unsigned long last_fire = 0;
-unsigned long last_rx   = 0;
+volatile unsigned long last_rx   = 0;
 
 /* Mode table we want to decode:
 
@@ -172,7 +172,7 @@ void UpdatePalette()
 void loop()
 {
   if (NeoSerial) {
-    if (millis() - last_rx > POKE_INTERVAL_MS) {
+    if ((millis() - last_rx) > POKE_INTERVAL_MS) {
       NeoSerial.write("mode status\r\n");
     }
   }
