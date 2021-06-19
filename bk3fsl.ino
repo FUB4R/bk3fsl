@@ -111,9 +111,9 @@ static void uart_rx_interrupt(uint8_t c)
 #endif
     // This is horrible but it does the job.
     if (buf[0] == ' ' && buf[1] == ' ' &&
-        buf[5] == '|' && buf[12] == '|' && buf[22] == '|' &&
+        (buf[2] == ' ' || (buf[2] >= '0' && buf[2] <= '9')) &&
         buf[3] >= '0' && buf[3] <= '9' &&
-        (buf[2] == ' ' || (buf[2] >= '0' && buf[2] <= '9'))) {
+        buf[5] == '|' && buf[12] == '|' && buf[22] == '|') {
 #ifdef HACK
       if (hack==3){
         hack=4;
