@@ -147,17 +147,17 @@ void UpdatePalette()
 {
   if (mode_running[0]) // Burning sands
     gPal = CRGBPalette16(CRGB::Black, CRGB::Yellow, CRGB::White);
-  if (mode_running[1]) // Mud bog
+  else if (mode_running[1]) // Mud bog
     gPal = CRGBPalette16(CRGB::Black, CRGB::Green, CRGB::White);
-  if (mode_running[3]) // Wicked cavern
+  else if (mode_running[3]) // Wicked cavern
     gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::White);
-  if (mode_running[4]) // Deep freeze
+  else if (mode_running[4]) // Deep freeze
     gPal = CRGBPalette16(CRGB::Black, CRGB::Cyan, CRGB::White);
-  if (mode_running[5]) // Black castle
+  else if (mode_running[5]) // Black castle
     gPal = CRGBPalette16(CRGB::Black, CRGB::Grey, CRGB::White);
-  if (mode_running[6]) // Catapult multiball
+  else if (mode_running[6]) // Catapult multiball
     gPal = CRGBPalette16(CRGB::Black, CRGB::Orange, CRGB::White);
-  if (mode_running[7]) // 3K multiball
+  else if (mode_running[7]) // 3K multiball
     gPal = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::White);
   // 8..12  WAR hurry-up
   // 21 BK wizard
