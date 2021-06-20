@@ -4,6 +4,8 @@ More info in this thread:
 
 * https://pinside.com/pinball/forum/topic/bksor-flaming-speaker-mod-diy
 
+Demo: https://vimeo.com/565235614
+
 ## Compiling
 Make sure you cloned the repo with submodules (`--recursive`), otherwise you can fix it with:
 ```
@@ -28,6 +30,8 @@ make DEVICE_PATH=/dev/ttyUSB0 upload
 Note that baud rate 115200 is used here. If you need to change it, the programming baud rate is set by `AVRDUDE_ARD_BAUDRATE` in the `Makefile`.
 
 ## Libraries
+> :warning: **DISCLAIMER:** Proceed at your own risk. This will void your warranty. Not endorsed by Stern. Author is not liable for any damage!
+
 Of course you can also do all of this in the official IDE... ;-) You will need the [FastLED](https://github.com/FastLED/FastLED) and [NeoHWSerial](https://github.com/SlashDevin/NeoHWSerial) libraries.
 
 ## Hardware setup
