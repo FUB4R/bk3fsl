@@ -48,6 +48,7 @@ CRGB leds[4][NUM_LEDS];
 // Segments 0 and 2 will be reversed.
 void Fire2012WithPalette(unsigned leds_idx, bool reverse);
 
+// Fire palette - changed based on running mode.
 CRGBPalette16 gPal;
 
 unsigned long last_fire = 0;
@@ -164,35 +165,44 @@ void setup()
   FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds[2], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   FastLED.setBrightness(BRIGHTNESS);
-
-  // Black Knight colour palette. Other examples below...
-  gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Orange);
 }
+
+CRGBPalette16 mode_palettes[] = {
+  //  0  Burning sands
+  [0] = CRGBPalette16(CRGB::Black, CRGB::Yellow, CRGB::LightGoldenrodYellow),
+  //  1  Mud bog
+  [1] = CRGBPalette16(CRGB::Black, CRGB::DarkGreen, CRGB::Green),
+  //  2  Molten fire
+  [2] = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Orange),
+  //  3  Wicked cavern
+  [3] = CRGBPalette16(CRGB::Black, CRGB::DarkRed, CRGB::Red),
+  //  4  Deep freeze
+  [4] = CRGBPalette16(CRGB::Black, CRGB::Cyan, CRGB::Teal),
+  //  5  Black castle
+  [5] = CRGBPalette16(CRGB::Black, CRGB::Grey, CRGB::White),
+  //  6  Catapult multiball
+  [6] = CRGBPalette16(CRGB::Black, CRGB::Orange, CRGB::Blue),
+  //  7  3K multiball
+  [7] = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::Gold),
+  // 8..12  WAR hurry-up
+  // 21  BK wizard
+  // 22  BK2K wizard
+  // 23  Super catapult MB
+  // 24  RAGE MB
+  // 25  Last Chance
+};
 
 void UpdatePalette()
 {
-  if (mode_running[0]) // Burning sands
-    gPal = CRGBPalette16(CRGB::Black, CRGB::Yellow, CRGB::LightGoldenrodYellow);
-  else if (mode_running[1]) // Mud bog
-    gPal = CRGBPalette16(CRGB::Black, CRGB::DarkGreen, CRGB::Green);
-  else if (mode_running[3]) // Wicked cavern
-    gPal = CRGBPalette16(CRGB::Black, CRGB::DarkRed, CRGB::Red);
-  else if (mode_running[4]) // Deep freeze
-    gPal = CRGBPalette16(CRGB::Black, CRGB::Cyan, CRGB::Teal);
-  else if (mode_running[5]) // Black castle
-    gPal = CRGBPalette16(CRGB::Black, CRGB::Grey, CRGB::White);
-  else if (mode_running[6]) // Catapult multiball
-    gPal = CRGBPalette16(CRGB::Black, CRGB::Orange, CRGB::Blue);
-  else if (mode_running[7]) // 3K multiball
-    gPal = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::Gold);
-  // 8..12  WAR hurry-up
-  // 21 BK wizard
-  // 22 BK2K wizard
-  // 23 Super catapult MB
-  // 24 RAGE MB
-  // 25 Last Chance
-  else // Default
-    gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Orange);
+  for (size_t i = 0; i < sizeof(mode_palettes) / sizeof(mode_palettes[0]); i++) {
+    if (mode_running[i]) {
+      gPal = mode_palettes[i];
+      return;
+    }
+  }
+
+  // Default (use molten fire)
+  gPal = mode_palettes[2];
 }
 
 void loop()
