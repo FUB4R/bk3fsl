@@ -51,8 +51,8 @@ void Fire2012WithPalette(unsigned leds_idx, bool reverse);
 // Fire palette - changed based on running mode.
 CRGBPalette16 gPal;
 
-unsigned long last_fire = 0;
-volatile unsigned long last_rx   = 0;
+unsigned long last_fire = 0; // timestamp of last frame
+volatile unsigned long last_rx = 0; // timestamp of last UART receive
 
 /* Mode table we want to decode:
 
@@ -117,10 +117,7 @@ static void uart_rx_interrupt(uint8_t c)
   }
   buf[col] = 0;
 
-  if (col == 4 && buf[0] == 'M' && buf[1] == 'o' && buf[2] == 'd' && buf[3] == 'e') {
-    game_running = true;
-  }
-  else if (col == 28) {
+  if (col == 28) {
 #ifdef HACK
     if (hack==2){
       hack=3;
@@ -143,6 +140,7 @@ static void uart_rx_interrupt(uint8_t c)
       if (buf[2] != ' ')
         mode += 10 * (buf[2] - '0');
       if (mode < NUM_MODES) {
+        game_running = true;
         // If something changes, don't update for a while (debounce).
         if (mode_running[mode] != running)
           last_rx += 5000;
@@ -160,7 +158,6 @@ void setup()
   NeoSerial.begin(115200);
 
   // The first strip gets leds[0..1], the second gets leds[2..3]
-  //FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds[2], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);
 
