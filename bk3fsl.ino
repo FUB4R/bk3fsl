@@ -11,7 +11,7 @@
 
 #define BRIGHTNESS  200
 #define FRAMES_PER_SECOND 40
-#define POKE_INTERVAL_MS 2000 /* mode status update rate */
+#define POKE_INTERVAL_MS 1000 /* mode status update rate */
 
 /* COOLING: How much does the air cool as it rises?
  * Less cooling = taller flames.  More cooling = shorter flames.
@@ -131,6 +131,9 @@ static void uart_rx_interrupt(uint8_t c)
       if (buf[2] != ' ')
         mode += 10 * (buf[2] - '0');
       if (mode < NUM_MODES) {
+        // If something changes, don't update for a while (debounce).
+        if (mode_running[mode] != running)
+          last_rx += 5000;
         mode_running[mode] = running;
         retro_mode_running = mode_running[21] || mode_running[22];
       }
