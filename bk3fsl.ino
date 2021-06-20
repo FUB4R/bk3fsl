@@ -167,31 +167,6 @@ void setup()
 
   // Black Knight colour palette. Other examples below...
   gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::Orange);
-
-  /* This first palette is the basic 'black body radiation' colors,
-  // which run from black to red to bright yellow to white.
-  //gPal = HeatColors_p;
-
-  // First, a gradient from black to red to yellow to white -- similar to HeatColors_p
-  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::Yellow, CRGB::White);
-
-  // Second, this palette is like the heat colors, but blue/aqua instead of red/yellow
-  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Blue, CRGB::Aqua,  CRGB::White);
-
-  // Third, here's a simpler, three-step gradient, from black to red to white
-  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::White);
-
-  // Fourth, the most sophisticated: this one sets up a new palette every
-  // time through the loop, based on a hue that changes every time.
-  // The palette is a gradient from black, to a dark color based on the hue,
-  // to a light color based on the hue, to white. (Put the code in loop().)
-
-  // static uint8_t hue = 0;
-  // hue++;
-  // CRGB darkcolor  = CHSV(hue,255,192); // pure hue, three-quarters brightness
-  // CRGB lightcolor = CHSV(hue,128,255); // half 'whitened', full brightness
-  // gPal = CRGBPalette16( CRGB::Black, darkcolor, lightcolor, CRGB::White);
-   */
 }
 
 void UpdatePalette()
@@ -274,6 +249,31 @@ void loop()
  * The dynamic palette shows how you can change the basic 'hue' of the
  * color palette every time through the loop, producing "rainbow fire".
  */
+
+  /* This first palette is the basic 'black body radiation' colors,
+  // which run from black to red to bright yellow to white.
+  //gPal = HeatColors_p;
+
+  // First, a gradient from black to red to yellow to white -- similar to HeatColors_p
+  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::Yellow, CRGB::White);
+
+  // Second, this palette is like the heat colors, but blue/aqua instead of red/yellow
+  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Blue, CRGB::Aqua,  CRGB::White);
+
+  // Third, here's a simpler, three-step gradient, from black to red to white
+  //   gPal = CRGBPalette16( CRGB::Black, CRGB::Red, CRGB::White);
+
+  // Fourth, the most sophisticated: this one sets up a new palette every
+  // time through the loop, based on a hue that changes every time.
+  // The palette is a gradient from black, to a dark color based on the hue,
+  // to a light color based on the hue, to white. (Put the code in loop().)
+
+  // static uint8_t hue = 0;
+  // hue++;
+  // CRGB darkcolor  = CHSV(hue,255,192); // pure hue, three-quarters brightness
+  // CRGB lightcolor = CHSV(hue,128,255); // half 'whitened', full brightness
+  // gPal = CRGBPalette16( CRGB::Black, darkcolor, lightcolor, CRGB::White);
+   */
 
 /* Fire2012 by Mark Kriegsman, July 2012
  * as part of "Five Elements" shown here: http://youtu.be/knWiGsmgycY
