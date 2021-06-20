@@ -73,6 +73,9 @@ bool mode_running[NUM_MODES];
 volatile unsigned char buf[BUF_SZ];
 volatile unsigned col = 0; // Set to 0 each time we see a newline.
 
+volatile bool game_running = false;
+volatile bool retro_mode_running = false;
+
 // Use this to debug UART comms.
 //#define HACK
 #ifdef HACK
@@ -102,7 +105,10 @@ static void uart_rx_interrupt(uint8_t c)
   }
   buf[col] = 0;
 
-  if (col == 28) {
+  if (col == 4 && buf[0] == 'M' && buf[1] == 'o' && buf[2] == 'd' && buf[3] == 'e') {
+    game_running = true;
+  }
+  else if (col == 28) {
 #ifdef HACK
     if (hack==2){
       hack=3;
@@ -126,6 +132,7 @@ static void uart_rx_interrupt(uint8_t c)
         mode += 10 * (buf[2] - '0');
       if (mode < NUM_MODES) {
         mode_running[mode] = running;
+        retro_mode_running = mode_running[21] || mode_running[22];
       }
     }
   }
@@ -216,7 +223,11 @@ void loop()
     UpdatePalette();
     for (int i = 0; i < 4; i++)
       Fire2012WithPalette(i, !(i & 1)); // reverse every other segment
-    FastLED.show(); // display this frame
+    // NB: FastLED will disable interrupts while this is running!
+    if (game_running && !retro_mode_running)
+      FastLED.show();
+    else
+      FastLED.clear(true);
   }
 
 }
