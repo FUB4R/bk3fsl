@@ -1,3 +1,14 @@
+/*
+ * --- bk3fsl ---
+ *
+ * Black Knight: Sword of Rage - Flaming Speaker Lights
+ *
+ * Mode-changing version by Fubar.
+ * Adapted from Fire2012WithPalette example code from FastLED
+ * with parameters from ScottyC on pinside.
+ *
+ * 20 June 2021
+ */
 #include <FastLED.h>
 #include <NeoHWSerial.h>
 
