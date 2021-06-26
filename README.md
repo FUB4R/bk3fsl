@@ -42,6 +42,8 @@ The game console needs to be wired to the Arduino's UART. For this there are 2 o
 
 The easiest option is probably the first one, use something like this with an Arduino Nano: https://www.hobbytronics.co.uk/ftdi-basic
 
+If going for the CN2 option, note that the i.MX6 won't driver the UART very vigorously, and the cable is quite long. Thus any pull-up resistors on the Arduino will scramble the RX line. On my nano, I had to remove both the LED resistor, and the series resistor on the programmer's serial line (i.e. breaking the ability to reprogram the board until restored). YMMV
+
 ## SD card configuration
 The game console is disabled by default. To enable it, you must edit:
 ```
