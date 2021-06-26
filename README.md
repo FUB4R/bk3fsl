@@ -38,7 +38,7 @@ The game console needs to be wired to the Arduino's UART. For this there are 2 o
 * Use a ttyUSB device (USB-serial converter) which is supported by the game's kernel (FTDI chips are).
 * Use the (unpopulated) CN2 connector on the carrier board.
 
-> :warning: **The CN2 connector is wired to the i.MX6's UART which does not tolerate 5V !!**
+> :warning: **The CN2 connector is wired to the i.MX6's UART which does not tolerate 5V. There is a voltage divider on the RX path (see carrier schematic), but be careful with voltage levels!**
 
 The easiest option is probably the first one, use something like this with an Arduino Nano: https://www.hobbytronics.co.uk/ftdi-basic
 
@@ -61,4 +61,4 @@ CONSOLE_LOG=/dev/ttyUSB0
 CONSOLE_INPUT=/dev/ttyUSB0
 ```
 
-> :warning: **If the USB-serial device is disconnected or not recognised, the game won't boot!** (It will hang on the Stern logo with "Initializing...".)
+> :warning: If the game doesn't boot (hangs on the Stern logo with "Initializing..."), it may be because the USB device isn't present/recognised.
