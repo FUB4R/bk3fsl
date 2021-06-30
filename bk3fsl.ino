@@ -214,6 +214,11 @@ void loop()
     }
   }
 
+  // If the game never starts (maybe not wired up), still display effect after
+  // a while.
+  if (millis() > 60000UL)
+    game_running = true;
+
   if (millis() - last_fire > 1000 / FRAMES_PER_SECOND) {
     last_fire = millis();
     UpdatePalette();
@@ -225,7 +230,6 @@ void loop()
     else
       FastLED.clear(true);
   }
-
 }
 
 
