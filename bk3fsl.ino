@@ -166,7 +166,7 @@ void setup()
 
 CRGBPalette16 mode_palettes[] = {
   //  0  Burning sands
-  [0] = CRGBPalette16(CRGB::Black, CRGB::Yellow, CRGB::LightGoldenrodYellow),
+  [0] = CRGBPalette16(CRGB::Black, CRGB::Yellow, CRGB::SandyBrown),
   //  1  Mud bog
   [1] = CRGBPalette16(CRGB::Black, CRGB::DarkGreen, CRGB::Green),
   //  2  Molten fire
@@ -176,11 +176,11 @@ CRGBPalette16 mode_palettes[] = {
   //  4  Deep freeze
   [4] = CRGBPalette16(CRGB::Black, CRGB::Cyan, CRGB::Teal),
   //  5  Black castle
-  [5] = CRGBPalette16(CRGB::Black, CRGB::Grey, CRGB::White),
+  [5] = CRGBPalette16(CRGB::Black, CRGB::Purple, CRGB::White),
   //  6  Catapult multiball
-  [6] = CRGBPalette16(CRGB::Black, CRGB::Orange, CRGB::Blue),
+  [6] = CRGBPalette16(CRGB::Black, 0xFF2000, 0xFF8000), // Orange
   //  7  3K multiball
-  [7] = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::Gold),
+  [7] = CRGBPalette16(CRGB::Black, CRGB::DarkBlue, CRGB::Blue),
   // 8..12  WAR hurry-up
   // 21  BK wizard
   // 22  BK2K wizard
