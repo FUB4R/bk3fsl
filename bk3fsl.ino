@@ -7,7 +7,7 @@
  * Adapted from Fire2012WithPalette example code from FastLED
  * with parameters from ScottyC on pinside.
  *
- * 20 June 2021
+ *  07 July 2021
  */
 #include <FastLED.h>
 #include <NeoHWSerial.h>
