@@ -145,7 +145,7 @@ static void uart_rx_interrupt(uint8_t c)
         if (mode_running[mode] != running)
           last_rx += 5000;
         mode_running[mode] = running;
-        retro_mode_running = mode_running[21] || mode_running[22];
+        retro_mode_running = mode_running[21] || mode_running[22] || mode_running[25];
       }
     }
   }
