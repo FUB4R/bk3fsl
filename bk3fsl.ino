@@ -23,6 +23,7 @@
 #define BRIGHTNESS  200
 #define FRAMES_PER_SECOND 40
 #define POKE_INTERVAL_MS 1000 /* mode status update rate */
+#define MODE_RUNNING_LINGER 3 /* linger when a mode stops running - catches glitches */
 
 /* COOLING: How much does the air cool as it rises?
  * Less cooling = taller flames.  More cooling = shorter flames.
@@ -78,7 +79,7 @@ Mode   Lit   CanStart   Running   Spotted   Complete   Completions
   25 |      |    Y    |         |        |           |       0    | (Last Chance)
 */
 #define NUM_MODES 26
-bool mode_running[NUM_MODES];
+int mode_running[NUM_MODES];
 
 // Line buffer
 #define BUF_SZ 256
@@ -111,10 +112,10 @@ static void uart_rx_interrupt(uint8_t c)
         mode += 10 * (buf[2] - '0');
       if (mode < NUM_MODES) {
         game_running = true;
-        // If something changes, don't update for a while (debounce).
-        if (mode_running[mode] != running)
-          last_rx += 5000;
-        mode_running[mode] = running;
+        if (running)
+          mode_running[mode] = MODE_RUNNING_LINGER;
+        else if (mode_running[mode] != 0)
+          mode_running[mode]--;
         retro_mode_running = mode_running[21] || mode_running[22] || mode_running[25];
       }
     }
