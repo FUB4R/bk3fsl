@@ -21,7 +21,7 @@
 #define NUM_LEDS    39
 
 #define BRIGHTNESS  200
-#define FRAMES_PER_SECOND 40
+#define FRAMES_PER_SECOND 30
 #define POKE_INTERVAL_MS 1000 /* mode status update rate */
 #define MODE_RUNNING_LINGER 3 /* linger when a mode stops running - catches glitches */
 
@@ -88,6 +88,7 @@ volatile unsigned col = 0; // Set to 0 each time we see a newline.
 
 volatile bool game_running = false;
 volatile bool retro_mode_running = false; // Switches the lights off
+volatile bool hurry_up = false;
 
 static void uart_rx_interrupt(uint8_t c)
 {
@@ -117,6 +118,7 @@ static void uart_rx_interrupt(uint8_t c)
         else if (mode_running[mode] != 0)
           mode_running[mode]--;
         retro_mode_running = mode_running[21] || mode_running[22] || mode_running[25];
+        hurry_up = mode_running[8] || mode_running[9] || mode_running[10] || mode_running[11] /*|| mode_running[12]*/;
       }
     }
   }
@@ -193,6 +195,8 @@ void loop()
 
   if (millis() - last_fire > 1000 / FRAMES_PER_SECOND) {
     last_fire = millis();
+    if (hurry_up)
+      last_fire += 333 / FRAMES_PER_SECOND;
     UpdatePalette();
     for (int i = 0; i < 4; i++)
       Fire2012WithPalette(i, !(i & 1)); // reverse every other segment
