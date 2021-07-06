@@ -86,13 +86,7 @@ volatile unsigned char buf[BUF_SZ];
 volatile unsigned col = 0; // Set to 0 each time we see a newline.
 
 volatile bool game_running = false;
-volatile bool retro_mode_running = false;
-
-// Use this to debug UART comms.
-//#define HACK
-#ifdef HACK
-volatile int hack=0;
-#endif
+volatile bool retro_mode_running = false; // Switches the lights off
 
 static void uart_rx_interrupt(uint8_t c)
 {
@@ -100,41 +94,17 @@ static void uart_rx_interrupt(uint8_t c)
 
   if (c == '\n' || c == '\r' || col == BUF_SZ-1) {
     col = 0;
-#ifdef HACK
-    if (hack==1){
-      hack=2;
-      gPal = CRGBPalette16(CRGB::Black, CRGB::Green, CRGB::White);
-    }
-#endif
   } else {
     buf[col++] = c;
-#ifdef HACK
-    if (hack==0){
-      hack=1;
-      gPal = CRGBPalette16(CRGB::Black, CRGB::Blue, CRGB::White);
-    }
-#endif
   }
   buf[col] = 0;
 
   if (col == 28) {
-#ifdef HACK
-    if (hack==2){
-      hack=3;
-      gPal = CRGBPalette16(CRGB::Black, CRGB::Yellow, CRGB::White);
-    }
-#endif
     // This is horrible but it does the job.
     if (buf[0] == ' ' && buf[1] == ' ' &&
         (buf[2] == ' ' || (buf[2] >= '0' && buf[2] <= '9')) &&
         buf[3] >= '0' && buf[3] <= '9' &&
         buf[5] == '|' && buf[12] == '|' && buf[22] == '|') {
-#ifdef HACK
-      if (hack==3){
-        hack=4;
-        gPal = CRGBPalette16(CRGB::Black, CRGB::Cyan, CRGB::White);
-      }
-#endif
       bool running = (buf[27] == 'Y');
       unsigned mode = buf[3] - '0';
       if (buf[2] != ' ')
@@ -207,10 +177,6 @@ void loop()
   if (NeoSerial) {
     if ((millis() - last_rx) > POKE_INTERVAL_MS) {
       NeoSerial.write("mode status\r\n");
-#ifdef HACK
-      gPal = CRGBPalette16(CRGB::Black, CRGB::Red, CRGB::White);
-      hack=1;
-#endif
     }
   }
 
