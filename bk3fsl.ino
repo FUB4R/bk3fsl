@@ -169,6 +169,11 @@ void UpdatePalette()
     }
   }
 
+  if (mode_running[23] || mode_running[24]) {
+    gPal = RainbowColors_p;
+    return;
+  }
+
   // Default (use molten fire)
   gPal = mode_palettes[2];
 }
