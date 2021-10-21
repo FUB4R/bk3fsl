@@ -9,8 +9,15 @@
  *
  *  07 July 2021
  */
+
 #include <FastLED.h>
+
+#ifdef ESP32
+#define NeoSerial Serial
+#include "driver/uart.h"
+#else
 #include <NeoHWSerial.h>
+#endif
 
 // Output separate effects on D4 and D5
 #define LED_PIN0   4
@@ -124,11 +131,23 @@ static void uart_rx_interrupt(uint8_t c)
   }
 }
 
+#ifdef ESP32
+static void IRAM_ATTR _uart_isr(void *arg)
+{
+  uart_rx_interrupt(NeoSerial.read());
+}
+#endif
+
 void setup()
 {
+#ifdef ESP32
+  intr_handle_t ih;
+  esp_intr_alloc(ETS_UART0_INTR_SOURCE, (int)ESP_INTR_FLAG_IRAM, _uart_isr, NULL, &ih);
+#else
   // NB: if you change speed here, change the avrdude baudrate in Makefile to match.
   NeoSerial.attachInterrupt(uart_rx_interrupt);
   NeoSerial.begin(115200);
+#endif
 
   // The first strip gets leds[0..1], the second gets leds[2..3]
   FastLED.addLeds<CHIPSET, LED_PIN0, COLOR_ORDER>(leds[0], 2 * NUM_LEDS).setCorrection(TypicalLEDStrip);

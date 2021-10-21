@@ -1,5 +1,7 @@
 # Arduino Make file. Refer to https://github.com/sudar/Arduino-Makefile
 
+esp32:
+	espmake32
 
 BOARD_TAG     = nano328
 USER_LIB_PATH = $(shell pwd)
