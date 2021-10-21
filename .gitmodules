@@ -7,3 +7,6 @@
 [submodule "NeoHWSerial"]
 	path = NeoHWSerial
 	url = git@github.com:SlashDevin/NeoHWSerial.git
+[submodule "makeEspArduino"]
+	path = makeEspArduino
+	url = ssh://git@github.com/plerup/makeEspArduino.git
