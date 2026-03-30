@@ -25,14 +25,17 @@
 #define LED_PIN0   4
 #define LED_PIN1   5
 
+// Set this if you have round 5.25" speaker lights with fewer total LEDs
+#define SMALL_SPEAKERS 0
+
 #define COLOR_ORDER GRB
 #define CHIPSET     WS2811
-#define NUM_LEDS    39
+#define NUM_LEDS    (SMALL_SPEAKERS ? 12 : 39)
 
 #define BRIGHTNESS  200
-#define FRAMES_PER_SECOND 30
-#define POKE_INTERVAL_MS 1000 /* mode status update rate */
+#define FRAMES_PER_SECOND (SMALL_SPEAKERS ? 15 : 30)
 #define MODE_RUNNING_LINGER 3 /* linger when a mode stops running - catches glitches */
+#define POKE_INTERVAL_MS 1000 /* mode status update rate */
 
 /* COOLING: How much does the air cool as it rises?
  * Less cooling = taller flames.  More cooling = shorter flames.
@@ -44,15 +47,30 @@
  * Default 120, suggested range 50-200. */
 #define SPARKING 100
 
-/* We are processing 4 segments, which form two U shapes:
+#if SMALL_SPEAKERS
+/* Round 5.25" speaker lights
+   We are processing 2 segments, which form two O shapes:
+ *
+ *          0000              1111
+ *         0    0            1    1
+ *         0    0            1    1
+ *          0000              1111
+ *            `------. .-------'
+ *                    Y
+ *                 leds[2]
+ */
+#else
+/* Rectangular full-frame speaker lights
+ * We are processing 4 segments, which form two U shapes:
  *
  *    1    0`------. .--------'2    3
  *    1    0        Y          2    3
  *    1    0        |          2    3
- *    111000      leds[]       222333
- *
- * Each segment has NUM_LEDS.
+ *    111000      leds[4]      222333
  */
+#endif
+// These hold the colour values for the numbered segments above.
+// Each segment has NUM_LEDS.
 CRGB leds[4][NUM_LEDS];
 
 // Segments 0 and 2 will be reversed.
