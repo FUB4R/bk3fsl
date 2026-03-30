@@ -28,7 +28,12 @@ make DEVICE_PATH=/dev/ttyUSB0 upload
 Note that baud rate 115200 is used here. If you need to change it, the programming baud rate is set by `AVRDUDE_ARD_BAUDRATE` in the `Makefile`.
 
 ## Libraries
-Of course you can also do all of this in the official IDE... ;-) You will need the [FastLED](https://github.com/FastLED/FastLED) and [NeoHWSerial](https://github.com/SlashDevin/NeoHWSerial) libraries.
+Of course you can also do all of this in the official IDE... ;-) You will need
+the [FastLED](https://github.com/FastLED/FastLED) and
+[NeoHWSerial](https://github.com/SlashDevin/NeoHWSerial) libraries.
+
+## Configurables
+There are a few options near the top of the source code, including one for the round speaker lights.
 
 ## Hardware setup
 > :warning: **DISCLAIMER:** Proceed at your own risk. This will void your warranty. Not endorsed by Stern. Author is not liable for any damage!
@@ -64,3 +69,9 @@ CONSOLE_INPUT=/dev/ttyUSB0
 ```
 
 > :warning: If the game doesn't boot (hangs on the Stern logo with "Initializing..."), it may be because the USB device isn't present/recognised.
+
+## ekips
+
+ekips is a modified game image which sends mode information on a serial bus.
+
+If you are using this, set the `USE_EKIPS` define to 1 to use its protocol.
