@@ -19,6 +19,8 @@
 #include <NeoHWSerial.h>
 #endif
 
+#define USE_EKIPS 0 /* rely on ekips instead of mode status termcmd */
+
 // Output separate effects on D4 and D5
 #define LED_PIN0   4
 #define LED_PIN1   5
@@ -97,10 +99,36 @@ volatile bool game_running = false;
 volatile bool retro_mode_running = false; // Switches the lights off
 volatile bool hurry_up = false;
 
+static void update_mode(int mode, bool running)
+{
+  if (mode < NUM_MODES) {
+    game_running = true;
+    if (running)
+      mode_running[mode] = MODE_RUNNING_LINGER;
+    else if (mode_running[mode] != 0)
+      mode_running[mode]--;
+    retro_mode_running = mode_running[21] || mode_running[22] || mode_running[25];
+    hurry_up = mode_running[8] || mode_running[9] || mode_running[10] || mode_running[11] /*|| mode_running[12]*/;
+  }
+}
+
 static void uart_rx_interrupt(uint8_t c)
 {
   last_rx = millis();
 
+#if USE_EKIPS
+  buf[col++] = c;
+  if (c == '\n' || col == BUF_SZ-1) {
+    if (buf[0] == 'm') {
+      for (unsigned i = 1; i <= col; i++) {
+        bool running = (buf[i] == 'Y');
+        unsigned mode = i - 1;
+        update_mode(mode, running);
+      }
+    }
+    col = 0;
+  }
+#else
   if (c == '\n' || c == '\r' || col == BUF_SZ-1) {
     col = 0;
   } else {
@@ -118,17 +146,10 @@ static void uart_rx_interrupt(uint8_t c)
       unsigned mode = buf[3] - '0';
       if (buf[2] != ' ')
         mode += 10 * (buf[2] - '0');
-      if (mode < NUM_MODES) {
-        game_running = true;
-        if (running)
-          mode_running[mode] = MODE_RUNNING_LINGER;
-        else if (mode_running[mode] != 0)
-          mode_running[mode]--;
-        retro_mode_running = mode_running[21] || mode_running[22] || mode_running[25];
-        hurry_up = mode_running[8] || mode_running[9] || mode_running[10] || mode_running[11] /*|| mode_running[12]*/;
-      }
+      update_mode(mode, running);
     }
   }
+#endif
 }
 
 #ifdef ESP32
@@ -202,9 +223,11 @@ void UpdatePalette()
 void loop()
 {
   if (NeoSerial) {
+#if USE_EKIPS == 0 /* ekips just sends its updates */
     if ((millis() - last_rx) > POKE_INTERVAL_MS) {
       NeoSerial.write("mode status\r\n");
     }
+#endif
   }
 
   // If the game never starts (maybe not wired up), still display effect after
